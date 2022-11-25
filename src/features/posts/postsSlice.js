@@ -1,4 +1,4 @@
-import { createSlice, nanoid, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { sub } from 'date-fns';
 
@@ -24,33 +24,21 @@ export const addNewPost = createAsyncThunk('posts/addNewPost', async initialPost
 	return response.data;
 });
 
+export const updatePost = createAsyncThunk('posts/updatePost', async initialPost => {
+	const { id } = initialPost;
+	try {
+		const response = await axios.put(`${POSTS_URL}/${id}`, initialPost);
+		return response.data;
+	} catch (err) {
+		//return err.message;
+		return initialPost; // only for testing Redux!
+	}
+});
+
 const postSlice = createSlice({
 	name: 'posts',
 	initialState,
 	reducers: {
-		postAdded: {
-			reducer: (state, action) => {
-				state.posts.push(action.payload);
-			},
-			prepare: (title, content, userId) => {
-				return {
-					payload: {
-						id: nanoid(),
-						title,
-						content,
-						date: new Date().toISOString(),
-						userId,
-						reactions: {
-							thumbsUp: 0,
-							wow: 0,
-							heart: 0,
-							rocket: 0,
-							coffee: 0,
-						},
-					},
-				};
-			},
-		},
 		reactionAdded: {
 			reducer: (state, action) => {
 				const { postId, reaction } = action.payload;
@@ -87,10 +75,6 @@ const postSlice = createSlice({
 				state.error = action.error.message;
 			})
 			.addCase(addNewPost.fulfilled, (state, action) => {
-				// Fix for API post IDs:
-				// Creating sortedPosts & assigning the id
-				// would be not be needed if the fake API
-				// returned accurate new post IDs
 				const sortedPosts = state.posts.sort((a, b) => {
 					if (a.id > b.id) return 1;
 					if (a.id < b.id) return -1;
@@ -109,6 +93,17 @@ const postSlice = createSlice({
 				};
 				console.log(action.payload);
 				state.posts.push(action.payload);
+			})
+			.addCase(updatePost.fulfilled, (state, action) => {
+				if (!action.payload?.id) {
+					console.log('Update could not complete');
+					console.log(action.payload);
+					return;
+				}
+				const { id } = action.payload;
+				action.payload.date = new Date().toISOString();
+				const posts = state.posts.filter(post => post.id !== id);
+				state.posts = [...posts, action.payload];
 			});
 	},
 });
