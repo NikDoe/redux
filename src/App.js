@@ -1,6 +1,6 @@
 import PostsLists from './features/posts/PostsLists';
 import AddPostForm from './features/posts/AddPostForm';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import SinglePostPage from './features/posts/SinglePostPage';
 import EditPostForm from './features/posts/EditPostForm';
@@ -23,6 +23,8 @@ function App() {
 					<Route index element={<UsersList />} />
 					<Route path=":userId" element={<UserPage />} />
 				</Route>
+
+				<Route path="*" element={<Navigate to="/" replace />} />
 			</Route>
 		</Routes>
 	);
