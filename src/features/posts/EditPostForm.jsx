@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { selectPostById, useDeletePostMutation, useUpdatePostMutation } from './postsSlice';
 import { useParams, useNavigate } from 'react-router-dom';
 
-import { selectAllUsers } from '../users/usersSlice';
+import { useGetUsersQuery } from '../users/usersSlice';
 
 const EditPostForm = () => {
 	const [updatePost, { isLoading }] = useUpdatePostMutation();
@@ -12,7 +12,7 @@ const EditPostForm = () => {
 	const navigate = useNavigate();
 
 	const post = useSelector(state => selectPostById(state, Number(postId)));
-	const users = useSelector(selectAllUsers);
+	const { data: users } = useGetUsersQuery();
 
 	const [title, setTitle] = useState(post?.title);
 	const [content, setContent] = useState(post?.body);
